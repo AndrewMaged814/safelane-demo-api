@@ -44,3 +44,11 @@ docker run --rm -p 8080:8080 safelane-demo-api
 
 Every push to `main` runs the tests and publishes two GHCR tags: `latest` and an immutable commit tag.
 The workflow summary prints the canonical `ghcr.io/owner/repository@sha256:...` image reference.
+
+## One-time demo infrastructure
+
+The Kubernetes namespace, Argo Rollout, namespace-scoped RBAC, and SafeLane controller credentials
+are infrastructure prerequisites rather than SafeLane configuration. A cluster operator can bootstrap
+them once with [`infra/bootstrap-safelane-demo-api.ps1`](infra/bootstrap-safelane-demo-api.ps1),
+using an immutable image digest from the publish workflow. See [`infra/README.md`](infra/README.md)
+for the command and safety notes.
