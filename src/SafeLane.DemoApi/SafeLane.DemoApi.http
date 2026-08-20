@@ -1,0 +1,18 @@
+@SafeLane.DemoApi_HostAddress = http://localhost:5091
+
+GET {{SafeLane.DemoApi_HostAddress}}/
+
+###
+
+GET {{SafeLane.DemoApi_HostAddress}}/healthz
+
+###
+
+GET {{SafeLane.DemoApi_HostAddress}}/version
+Accept: application/json
+
+###
+GET {{SafeLane.DemoApi_HostAddress}}/api/demo
+Accept: application/json
+
+###
