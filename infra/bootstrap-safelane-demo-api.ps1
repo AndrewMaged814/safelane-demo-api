@@ -191,12 +191,19 @@ $canaryServiceName = "$Application-canary"
 $existingStableService = Get-KubectlResource @('get', 'service', $stableServiceName, '-n', $Namespace, '-o', 'json')
 $existingCanaryService = Get-KubectlResource @('get', 'service', $canaryServiceName, '-n', $Namespace, '-o', 'json')
 $existingRollout = Get-KubectlResource @('get', 'rollout', $Application, '-n', $Namespace, '-o', 'json')
+$adoptExistingRollout = $false
 foreach ($existing in @(
         @{ Kind = 'Service'; Name = $stableServiceName; Object = $existingStableService },
         @{ Kind = 'Service'; Name = $canaryServiceName; Object = $existingCanaryService },
         @{ Kind = 'Rollout'; Name = $Application; Object = $existingRollout }
     )) {
     if ($null -ne $existing.Object -and $existing.Object.metadata.labels.'safelane.dev/managed-by' -ne 'demo-bootstrap') {
+        if ($existing.Kind -eq 'Rollout' -and
+            $existing.Object.spec.template.spec.containers[0].image -eq $ImageReference) {
+            $adoptExistingRollout = $true
+            Write-Warning "Rollout '$($existing.Name)' matches this demo image but lacks the bootstrap label; it will be adopted."
+            continue
+        }
         throw "$($existing.Kind) '$($existing.Name)' already exists without the SafeLane demo bootstrap label; refusing to modify it."
     }
 }
@@ -209,6 +216,7 @@ Write-Host ''
 Write-Host 'The following changes will be made:'
 if (-not $namespaceExists) { Write-Host "  - create namespace $Namespace" }
 Write-Host '  - create/update namespace-scoped caller and controller RBAC'
+if ($adoptExistingRollout) { Write-Host "  - adopt existing Rollout $Application (image matches)" }
 Write-Host '  - create the baseline Services and Argo Rollout if absent'
 Write-Host "  - create a caller context '$callerContext' and make it current"
 Write-Host "  - write the controller kubeconfig at $ControllerKubeconfig"
@@ -287,8 +295,20 @@ metadata:
     safelane.dev/managed-by: demo-bootstrap
 rules:
 - apiGroups: [argoproj.io]
-  resources: [rollouts]
+  resources: [rollouts, rollouts/status]
   verbs: [get, list, watch, patch]
+- apiGroups: ['']
+  resources: [services]
+  verbs: [get, list, watch, create, update, patch]
+- apiGroups: [argoproj.io]
+  resources: [analysistemplates]
+  verbs: [get, create, update, patch]
+- apiGroups: [argoproj.io]
+  resources: [analysisruns]
+  verbs: [get]
+- apiGroups: [networking.k8s.io]
+  resources: [ingresses]
+  verbs: [get, create, update, patch]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -306,6 +326,15 @@ roleRef:
   kind: Role
   name: safelane-controller
 "@
+
+if ($adoptExistingRollout) {
+    if ($WhatIfPreference) {
+        Write-Host "WHATIF: label rollout $Application as managed by demo-bootstrap"
+    }
+    else {
+        Invoke-Kubectl @('label', 'rollout', $Application, 'safelane.dev/managed-by=demo-bootstrap', '--overwrite', '-n', $Namespace) | Write-Host
+    }
+}
 
 $rolloutExists = $null -ne $existingRollout
 if (-not $rolloutExists) {
