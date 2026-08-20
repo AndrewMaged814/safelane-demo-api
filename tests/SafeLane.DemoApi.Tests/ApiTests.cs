@@ -46,6 +46,7 @@ public sealed class ApiTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await client.GetFromJsonAsync<VersionResponse>("/version");
 
         Assert.NotNull(response);
+        Assert.Equal("safelane-demo-api", response.Service);
         Assert.Equal("dev", response.Version);
         Assert.Equal("unknown", response.Commit);
     }
@@ -90,6 +91,6 @@ public sealed class ApiTests : IClassFixture<WebApplicationFactory<Program>>
             $"Expected at least 90 ms of latency, observed {stopwatch.ElapsedMilliseconds} ms.");
     }
 
-    private sealed record VersionResponse(string Version, string Commit);
+    private sealed record VersionResponse(string Service, string Version, string Commit);
     private sealed record DemoResponse(string Status);
 }

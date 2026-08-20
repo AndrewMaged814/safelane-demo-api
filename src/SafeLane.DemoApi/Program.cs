@@ -22,6 +22,7 @@ app.MapGet("/", () => Results.Content("""
 app.MapGet("/healthz", () => Results.Text("healthy"));
 app.MapGet("/version", (IConfiguration configuration) => new
 {
+    service = "safelane-demo-api",
     version = configuration["APP_VERSION"] ?? "dev",
     commit = configuration["GIT_SHA"] ?? "unknown"
 });
