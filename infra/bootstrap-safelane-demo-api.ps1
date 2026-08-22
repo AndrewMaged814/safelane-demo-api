@@ -345,15 +345,15 @@ metadata:
   name: $Application-stable
   namespace: $Namespace
   labels:
-    app: $Application
+    app.kubernetes.io/name: $Application
     safelane.dev/managed-by: demo-bootstrap
 spec:
   selector:
-    app: $Application
+    app.kubernetes.io/name: $Application
   ports:
   - name: http
     port: 80
-    targetPort: 8080
+    targetPort: http
 ---
 apiVersion: v1
 kind: Service
@@ -361,15 +361,15 @@ metadata:
   name: $Application-canary
   namespace: $Namespace
   labels:
-    app: $Application
+    app.kubernetes.io/name: $Application
     safelane.dev/managed-by: demo-bootstrap
 spec:
   selector:
-    app: $Application
+    app.kubernetes.io/name: $Application
   ports:
   - name: http
     port: 80
-    targetPort: 8080
+    targetPort: http
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
@@ -377,33 +377,34 @@ metadata:
   name: $Application
   namespace: $Namespace
   labels:
-    app: $Application
+    app.kubernetes.io/name: $Application
     safelane.dev/managed-by: demo-bootstrap
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: $Application
+      app.kubernetes.io/name: $Application
   template:
     metadata:
       labels:
-        app: $Application
+        app.kubernetes.io/name: $Application
     spec:
       containers:
       - name: $Application
         image: $ImageReference
         ports:
-        - containerPort: 8080
+        - name: http
+          containerPort: 8080
         readinessProbe:
           httpGet:
             path: /healthz
-            port: 8080
+            port: http
           initialDelaySeconds: 3
           periodSeconds: 5
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 8080
+            port: http
           initialDelaySeconds: 5
           periodSeconds: 10
   strategy:
