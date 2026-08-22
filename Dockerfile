@@ -16,10 +16,14 @@ RUN dotnet publish src/SafeLane.DemoApi/SafeLane.DemoApi.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 ARG APP_VERSION=dev
 ARG GIT_SHA=unknown
+ARG DEMO_FAILURE_RATE=0
+ARG DEMO_LATENCY_MS=0
 
 ENV ASPNETCORE_HTTP_PORTS=8080 \
     APP_VERSION=${APP_VERSION} \
-    GIT_SHA=${GIT_SHA}
+    GIT_SHA=${GIT_SHA} \
+    DEMO_FAILURE_RATE=${DEMO_FAILURE_RATE} \
+    DEMO_LATENCY_MS=${DEMO_LATENCY_MS}
 
 WORKDIR /app
 COPY --from=build --chown=$APP_UID:$APP_UID /app ./

@@ -42,8 +42,10 @@ docker build --build-arg APP_VERSION=local --build-arg GIT_SHA=$(git rev-parse H
 docker run --rm -p 8080:8080 safelane-demo-api
 ```
 
-Every push to `main` runs the tests and publishes two GHCR tags: `latest` and an immutable commit tag.
-The workflow summary prints the canonical `ghcr.io/owner/repository@sha256:...` image reference.
+Every push to `main` runs the tests and publishes the normal API, the external probe, and named
+`healthy-redesign`, `broken-demo`, and `final-healthy` fixture variants. Each fixture receives a
+commit-qualified tag, and the workflow summary prints its canonical immutable digest. The original
+healthy baseline remains the historical `sha-726662d2c396b54cfc047721a41bc67e77643924` image.
 
 ## One-time demo infrastructure
 

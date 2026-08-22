@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
+WORKDIR /source
+COPY src/SafeLane.DemoProbe/SafeLane.DemoProbe.csproj src/SafeLane.DemoProbe/
+RUN dotnet restore src/SafeLane.DemoProbe/SafeLane.DemoProbe.csproj
+COPY src/SafeLane.DemoProbe/ src/SafeLane.DemoProbe/
+RUN dotnet publish src/SafeLane.DemoProbe/SafeLane.DemoProbe.csproj --configuration Release --no-restore --output /app
+
+FROM mcr.microsoft.com/dotnet/runtime:10.0-alpine AS final
+WORKDIR /app
+COPY --from=build --chown=$APP_UID:$APP_UID /app ./
+USER $APP_UID
+ENTRYPOINT ["dotnet", "SafeLane.DemoProbe.dll"]

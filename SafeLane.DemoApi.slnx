@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/SafeLane.DemoApi/SafeLane.DemoApi.csproj" />
+    <Project Path="src/SafeLane.DemoProbe/SafeLane.DemoProbe.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SafeLane.DemoApi.Tests/SafeLane.DemoApi.Tests.csproj" />

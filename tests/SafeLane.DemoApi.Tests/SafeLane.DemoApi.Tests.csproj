@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SafeLane.DemoApi\SafeLane.DemoApi.csproj" />
+    <ProjectReference Include="..\..\src\SafeLane.DemoProbe\SafeLane.DemoProbe.csproj" />
   </ItemGroup>
 
 </Project>
