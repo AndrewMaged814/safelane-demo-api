@@ -16,7 +16,7 @@ Open <http://localhost:5091> or call the endpoints directly:
 | `GET /` | Landing page and endpoint links |
 | `GET /healthz` | Stable liveness/readiness signal |
 | `GET /version` | Service name, image version, and source commit |
-| `GET /api/demo` | Controllable application response |
+| `GET /api/demo` | Controllable application response, with the count of requests this instance has served |
 
 ## Control demo behavior
 

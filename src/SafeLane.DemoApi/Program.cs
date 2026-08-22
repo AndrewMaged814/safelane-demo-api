@@ -26,8 +26,11 @@ app.MapGet("/version", (IConfiguration configuration) => new
     version = configuration["APP_VERSION"] ?? "dev",
     commit = configuration["GIT_SHA"] ?? "unknown"
 });
+
+var servedRequests = 0L;
 app.MapGet("/api/demo", async (IConfiguration configuration, CancellationToken cancellationToken) =>
 {
+    var requests = Interlocked.Increment(ref servedRequests);
     var configuredLatency = int.TryParse(configuration["DEMO_LATENCY_MS"], out var latency) ? latency : 0;
     var latencyMs = Math.Clamp(configuredLatency, 0, 30_000);
     var configuredRate = int.TryParse(configuration["DEMO_FAILURE_RATE"], out var rate) ? rate : 0;
@@ -36,8 +39,8 @@ app.MapGet("/api/demo", async (IConfiguration configuration, CancellationToken c
     await Task.Delay(latencyMs, cancellationToken);
 
     IResult result = Random.Shared.Next(100) < failureRate
-        ? Results.Json(new { status = "degraded" }, statusCode: StatusCodes.Status503ServiceUnavailable)
-        : Results.Ok(new { status = "ok" });
+        ? Results.Json(new { status = "degraded", requests }, statusCode: StatusCodes.Status503ServiceUnavailable)
+        : Results.Ok(new { status = "ok", requests });
     return result;
 });
 
