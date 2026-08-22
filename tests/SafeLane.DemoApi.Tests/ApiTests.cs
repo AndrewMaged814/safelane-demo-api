@@ -59,6 +59,20 @@ public sealed class ApiTests : IClassFixture<WebApplicationFactory<Program>>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("ok", body?.Status);
+        Assert.True(body?.Requests >= 1, "Expected the served-request count to be positive.");
+    }
+
+    [Fact]
+    public async Task Demo_endpoint_counts_the_requests_it_has_served()
+    {
+        using var countingFactory = factory.WithWebHostBuilder(_ => { });
+        using var countingClient = countingFactory.CreateClient();
+
+        var first = await countingClient.GetFromJsonAsync<DemoResponse>("/api/demo");
+        var second = await countingClient.GetFromJsonAsync<DemoResponse>("/api/demo");
+
+        Assert.Equal(1L, first!.Requests);
+        Assert.Equal(2L, second!.Requests);
     }
 
     [Fact]
@@ -73,6 +87,7 @@ public sealed class ApiTests : IClassFixture<WebApplicationFactory<Program>>
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Equal("degraded", body?.Status);
+        Assert.True(body?.Requests >= 1, "Expected a degraded response to still report its served-request count.");
     }
 
     [Fact]
@@ -92,5 +107,5 @@ public sealed class ApiTests : IClassFixture<WebApplicationFactory<Program>>
     }
 
     private sealed record VersionResponse(string Service, string Version, string Commit);
-    private sealed record DemoResponse(string Status);
+    private sealed record DemoResponse(string Status, long Requests);
 }
